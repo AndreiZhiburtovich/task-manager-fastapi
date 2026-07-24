@@ -1,15 +1,16 @@
 # Task Manager API on FastAPI
 
 ## Описание
-REST API для управления задачами с аутентификацией. Проект создан для изучения FastAPI и построения бэкенда для пет-проекта.
+REST API для управления задачами с JWT аутентификацией. Проект создан для изучения FastAPI и построения бэкенда для пет-проекта.
 
 ## Технологии
 - **FastAPI** — современный веб-фреймворк для Python
 - **SQLAlchemy** — ORM для работы с базами данных
 - **SQLite** — легкая база данных (в будущем заменим на PostgreSQL)
-- **JWT** — аутентификация (будет добавлена)
-- **Alembic** — миграции базы данных
-- **Docker** — контейнеризация (в будущем)
+- **JWT** — аутентификация через JSON Web Tokens
+- **bcrypt** — хеширование паролей
+- **Pydantic** — валидация данных
+- **Uvicorn** — ASGI сервер
 
 ## Установка и запуск
 
@@ -46,17 +47,61 @@ python run.py
 
 ## API Endpoints
 
+### Публичные эндпоинты (без авторизации)
+
 | Метод | Эндпоинт | Описание |
 |-------|----------|----------|
 | GET | `/` | Проверка работы API |
-| GET | `/tasks` | Получить список всех задач |
+| GET | `/health` | Проверка состояния сервиса |
+| POST | `/register` | Регистрация нового пользователя |
+| POST | `/token` | Получение JWT токена |
+
+### Защищённые эндпоинты (требуется JWT токен)
+
+| Метод | Эндпоинт | Описание |
+|-------|----------|----------|
+| GET | `/tasks` | Получить список всех задач пользователя |
 | GET | `/tasks/{id}` | Получить задачу по ID |
 | POST | `/tasks` | Создать новую задачу |
 | PUT | `/tasks/{id}` | Обновить задачу |
 | DELETE | `/tasks/{id}` | Удалить задачу |
 
-### Пример запроса (POST /tasks)
+## Примеры запросов
+
+### Регистрация пользователя
+```http
+POST /register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "securepassword123"
+}
+```
+
+### Получение токена
+```http
+POST /token
+Content-Type: application/x-www-form-urlencoded
+
+username=testuser&password=securepassword123
+```
+
+**Ответ:**
 ```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
+}
+```
+
+### Создание задачи (с токеном)
+```http
+POST /tasks
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+
 {
   "title": "Изучить FastAPI",
   "description": "Полностью изучить документацию FastAPI",
@@ -64,7 +109,7 @@ python run.py
 }
 ```
 
-### Пример ответа
+**Ответ:**
 ```json
 {
   "id": 1,
@@ -72,9 +117,58 @@ python run.py
   "description": "Полностью изучить документацию FastAPI",
   "completed": false,
   "created_at": "2024-01-15T10:00:00",
-  "updated_at": null
+  "updated_at": null,
+  "user_id": 1
 }
 ```
+
+### Получение всех задач (с токеном)
+```http
+GET /tasks
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+**Ответ:**
+```json
+[
+  {
+    "id": 1,
+    "title": "Изучить FastAPI",
+    "description": "Полностью изучить документацию FastAPI",
+    "completed": false,
+    "created_at": "2024-01-15T10:00:00",
+    "updated_at": null,
+    "user_id": 1
+  }
+]
+```
+
+### Обновление задачи (с токеном)
+```http
+PUT /tasks/1
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+
+{
+  "completed": true
+}
+```
+
+### Удаление задачи (с токеном)
+```http
+DELETE /tasks/1
+Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+## Аутентификация
+
+Проект использует JWT (JSON Web Tokens) для аутентификации:
+
+1. **Регистрация** — создание нового пользователя
+2. **Логин** — получение JWT токена через `/token`
+3. **Доступ к защищённым эндпоинтам** — передача токена в заголовке `Authorization: Bearer <token>`
+
+Токен действителен **30 минут**. По истечении срока нужно получить новый.
 
 ## Структура проекта
 
@@ -84,14 +178,15 @@ task-manager-fastapi/
 │   ├── __init__.py          # Инициализация пакета
 │   ├── main.py              # Точка входа в приложение
 │   ├── database.py          # Настройка подключения к БД
-│   ├── models.py            # Модели SQLAlchemy
+│   ├── models.py            # Модели SQLAlchemy (User, Task)
 │   ├── schemas.py           # Схемы Pydantic для валидации
 │   ├── crud.py              # CRUD операции с БД
-│   ├── auth.py              # Аутентификация (JWT)
+│   ├── auth.py              # JWT аутентификация
 │   └── routes.py            # API эндпоинты
 ├── venv/                    # Виртуальное окружение
 ├── requirements.txt         # Зависимости проекта
 ├── run.py                   # Файл для запуска приложения
+├── task_manager.db          # SQLite база данных
 ├── .gitignore               # Игнорируемые файлы
 └── README.md                # Описание проекта
 ```
@@ -101,12 +196,16 @@ task-manager-fastapi/
 - [x] Базовая структура проекта
 - [x] Модель Task с CRUD операциями
 - [x] Swagger документация
-- [ ] Аутентификация (JWT)
-- [ ] Модель User (регистрация, логин)
-- [ ] Связь задач с пользователями
+- [x] Аутентификация (JWT)
+- [x] Модель User (регистрация, логин)
+- [x] Связь задач с пользователями
+- [ ] Alembic миграции
+- [ ] Переменные окружения (.env)
+- [ ] Тесты (pytest)
+- [ ] Переход на PostgreSQL
+- [ ] Docker контейнеризация
 - [ ] Фронтенд на React
 - [ ] Деплой на сервер
-- [ ] Docker контейнеризация
 
 ## Команды для работы с Git
 
