@@ -87,6 +87,7 @@ task-manager-fastapi/
 │   ├── models.py            # Модели SQLAlchemy
 │   ├── schemas.py           # Схемы Pydantic для валидации
 │   ├── crud.py              # CRUD операции с БД
+│   ├── auth.py              # Аутентификация (JWT)
 │   └── routes.py            # API эндпоинты
 ├── venv/                    # Виртуальное окружение
 ├── requirements.txt         # Зависимости проекта
