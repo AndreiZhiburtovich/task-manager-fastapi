@@ -1,20 +1,23 @@
 from fastapi import FastAPI
+from app.database import engine, Base
 from app.routes import router
+
+# Создаём таблицы в базе данных
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Task Manager API",
-    description="API для управления задачами",
-    version="1.0.0"
+    description="REST API for task management with JWT authentication",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
 )
 
-# Подключаем роуты
+# Подключаем все маршруты
 app.include_router(router)
 
-@app.get("/")
-def root():
-    return {
-        "message": "Task Manager API is running!",
-        "docs": "/docs",
-        "redoc": "/redoc"
-    }
+@app.get("/health")
+def health_check():
+    """Проверка состояния сервиса"""
+    return {"status": "healthy", "message": "Task Manager API is running"}
 
