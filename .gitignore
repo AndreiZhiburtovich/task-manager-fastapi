@@ -25,6 +25,7 @@ env/
 
 # Database
 *.db
+*.db.backup
 *.sqlite
 *.sqlite3
 
@@ -50,3 +51,6 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+# Personal notes
+NOTES.md
+TODO.md

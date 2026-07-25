@@ -1,0 +1,31 @@
+### Регистрация
+POST http://localhost:8000/register
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "securepassword123"
+}
+
+### Получение токена
+POST http://localhost:8000/token
+Content-Type: application/x-www-form-urlencoded
+
+username=testuser&password=securepassword123
+
+### Создание задачи
+POST http://localhost:8000/tasks
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+    "title": "Изучить FastAPI",
+    "description": "Полностью изучить",
+    "completed": false
+}
+
+### Получить все задачи
+GET http://localhost:8000/tasks
+Authorization: Bearer YOUR_TOKEN_HERE
+
