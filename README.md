@@ -11,6 +11,7 @@ REST API для управления задачами с JWT аутентифи�
 - **bcrypt** — хеширование паролей
 - **Pydantic** — валидация данных
 - **Uvicorn** — ASGI сервер
+- **Alembic** — миграции базы данных
 
 ## Установка и запуск
 
@@ -32,7 +33,12 @@ source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-### 4. Запуск приложения
+### 4. Применение миграций базы данных
+```bash
+alembic upgrade head
+```
+
+### 5. Запуск приложения
 ```bash
 python run.py
 ```
@@ -183,12 +189,38 @@ task-manager-fastapi/
 │   ├── crud.py              # CRUD операции с БД
 │   ├── auth.py              # JWT аутентификация
 │   └── routes.py            # API эндпоинты
+├── alembic/                 # Миграции базы данных
+│   ├── versions/            # Файлы миграций
+│   ├── env.py               # Настройка Alembic
+│   └── script.py.mako       # Шаблон для миграций
 ├── venv/                    # Виртуальное окружение
 ├── requirements.txt         # Зависимости проекта
+├── alembic.ini              # Конфигурация Alembic
 ├── run.py                   # Файл для запуска приложения
-├── task_manager.db          # SQLite база данных
 ├── .gitignore               # Игнорируемые файлы
 └── README.md                # Описание проекта
+```
+
+## Управление миграциями (Alembic)
+
+### Создание новой миграции
+```bash
+alembic revision --autogenerate -m "Описание изменений"
+```
+
+### Применение миграций
+```bash
+alembic upgrade head
+```
+
+### Откат миграции
+```bash
+alembic downgrade -1
+```
+
+### Просмотр текущего состояния
+```bash
+alembic current
 ```
 
 ## Планы по развитию
@@ -199,7 +231,7 @@ task-manager-fastapi/
 - [x] Аутентификация (JWT)
 - [x] Модель User (регистрация, логин)
 - [x] Связь задач с пользователями
-- [ ] Alembic миграции
+- [x] Alembic миграции
 - [ ] Переменные окружения (.env)
 - [ ] Тесты (pytest)
 - [ ] Переход на PostgreSQL
