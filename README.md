@@ -13,6 +13,7 @@ REST API для управления задачами с JWT аутентифи�
 - **Uvicorn** — ASGI сервер
 - **Alembic** — миграции базы данных
 - **python-dotenv** — управление переменными окружения
+- **pytest** — тестирование API эндпоинтов
 
 ## Установка и запуск
 
@@ -64,6 +65,41 @@ python run.py
 ```
 
 После запуска сервер будет доступен по адресу: http://localhost:8000
+
+## Тестирование
+
+Проект использует pytest для тестирования API эндпоинтов.
+
+### Установка тестовых зависимостей
+
+```bash
+pip install -r requirements.txt
+```
+
+### Запуск всех тестов
+
+```bash
+pytest -v
+```
+
+### Запуск конкретного тестового файла
+
+```bash
+pytest -v tests/test_auth.py
+pytest -v tests/test_tasks.py
+```
+
+### Проверка покрытия кода тестами
+
+```bash
+pytest --cov=app --cov-report=term
+```
+
+### Результаты тестов
+
+```text
+17 passed, 0 failed
+```
 
 ## Документация API
 
@@ -230,6 +266,11 @@ task-manager-fastapi/
 │   ├── versions/            # Файлы миграций
 │   ├── env.py               # Настройка Alembic
 │   └── script.py.mako       # Шаблон для миграций
+├── tests/
+│   ├── __init__.py
+│   ├── conftest.py          # Фикстуры для тестов
+│   ├── test_auth.py         # Тесты регистрации и логина
+│   └── test_tasks.py        # Тесты CRUD задач
 ├── .env                     # Переменные окружения (НЕ В GIT!)
 ├── .env.example             # Пример переменных окружения
 ├── venv/                    # Виртуальное окружение
@@ -272,7 +313,7 @@ alembic current
 - [x] Связь задач с пользователями
 - [x] Alembic миграции
 - [x] Переменные окружения (.env)
-- [ ] Тесты (pytest)
+- [x] Тесты (pytest)
 - [ ] Переход на PostgreSQL
 - [ ] Docker контейнеризация
 - [ ] Фронтенд на React
