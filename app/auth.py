@@ -13,37 +13,29 @@ from app.database import SessionLocal
 from app.models import User
 from app.schemas import TokenData
 
-# Загружаем переменные окружения из .env
+# Загружаем переменные окружения
 load_dotenv()
 
-# --- Проверка обязательных переменных окружения ---
-SECRET_KEY = os.getenv("SECRET_KEY")
-if not SECRET_KEY:
-    raise ValueError(
-        "SECRET_KEY is not set! "
-        "Please create .env file with SECRET_KEY=your-secret-key"
-    )
 
-ALGORITHM = os.getenv("ALGORITHM")
-if not ALGORITHM:
-    raise ValueError(
-        "ALGORITHM is not set! "
-        "Please create .env file with ALGORITHM=HS256"
-    )
+# --- Конфигурация ---
+def _get_env_var(name: str, default: Optional[str] = None) -> str:
+    """Получает переменную окружения с проверкой."""
+    value = os.getenv(name, default)
+    if value is None:
+        raise ValueError(
+            f"{name} is not set! "
+            f"Please create .env file with {name}=your-value"
+        )
+    return value
 
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
-if not ACCESS_TOKEN_EXPIRE_MINUTES:
-    raise ValueError(
-        "ACCESS_TOKEN_EXPIRE_MINUTES is not set! "
-        "Please create .env file with ACCESS_TOKEN_EXPIRE_MINUTES=30"
-    )
 
-# Преобразуем в int (теперь мы уверены, что переменная есть)
-ACCESS_TOKEN_EXPIRE_MINUTES = int(ACCESS_TOKEN_EXPIRE_MINUTES)
-# --- Конец проверки ---
+SECRET_KEY = _get_env_var("SECRET_KEY")
+ALGORITHM = _get_env_var("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(_get_env_var("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
-# Настройки хеширования паролей
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# --- Настройки хеширования и OAuth2 ---
+pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
@@ -69,9 +61,7 @@ def get_password_hash(password: str) -> str:
 def authenticate_user(db: Session, username: str, password: str) -> Optional[User]:
     """Аутентифицирует пользователя по логину и паролю."""
     user = db.query(User).filter(User.username == username).first()
-    if not user:
-        return None
-    if not verify_password(password, user.hashed_password):
+    if not user or not verify_password(password, user.hashed_password):
         return None
     return user
 
@@ -79,13 +69,12 @@ def authenticate_user(db: Session, username: str, password: str) -> Optional[Use
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Создаёт JWT токен."""
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    # Используем datetime.utcnow() для совместимости с Python 3.11 и ниже
+    expire = datetime.utcnow() + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 async def get_current_user(
@@ -98,19 +87,19 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        username = payload.get("sub")
+        if not username:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        
+        user = db.query(User).filter(User.username == username).first()
+        if not user:
+            raise credentials_exception
+        return user
     except JWTError:
         raise credentials_exception
-    
-    user = db.query(User).filter(User.username == token_data.username).first()
-    if user is None:
-        raise credentials_exception
-    return user
 
 
 async def get_current_active_user(
