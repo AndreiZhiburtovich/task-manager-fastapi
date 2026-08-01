@@ -1,7 +1,8 @@
 # Task Manager API on FastAPI
 
 ## Описание
-REST API для управления задачами с JWT аутентификацией. Проект создан для изучения FastAPI и построения бэкенда для пет-проекта.
+
+REST API с JWT-аутентификацией, изоляцией пользовательских данных и миграциями БД
 
 ## Технологии
 - **FastAPI** — современный веб-фреймворк для Python
@@ -18,12 +19,14 @@ REST API для управления задачами с JWT аутентифи�
 ## Установка и запуск
 
 ### 1. Клонирование репозитория
+
 ```bash
 git clone https://github.com/AndreiZhiburtovich/task-manager-fastapi.git
 cd task-manager-fastapi
 ```
 
 ### 2. Создание виртуального окружения
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate  # Linux/Mac
@@ -31,6 +34,7 @@ source venv/bin/activate  # Linux/Mac
 ```
 
 ### 3. Установка зависимостей
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -55,11 +59,13 @@ DATABASE_URL=sqlite:///./task_manager.db
 > **Важно:** Никогда не коммитьте `.env` файл в репозиторий! Он содержит секретные ключи.
 
 ### 5. Применение миграций базы данных
+
 ```bash
 alembic upgrade head
 ```
 
 ### 6. Запуск приложения
+
 ```bash
 python run.py
 ```
@@ -131,6 +137,7 @@ pytest --cov=app --cov-report=term
 ## Примеры запросов
 
 ### Регистрация пользователя
+
 ```http
 POST /register
 Content-Type: application/json
@@ -143,6 +150,7 @@ Content-Type: application/json
 ```
 
 ### Получение токена
+
 ```http
 POST /token
 Content-Type: application/x-www-form-urlencoded
@@ -159,6 +167,7 @@ username=testuser&password=securepassword123
 ```
 
 ### Создание задачи (с токеном)
+
 ```http
 POST /tasks
 Authorization: Bearer YOUR_ACCESS_TOKEN
@@ -185,6 +194,7 @@ Content-Type: application/json
 ```
 
 ### Получение всех задач (с токеном)
+
 ```http
 GET /tasks
 Authorization: Bearer YOUR_ACCESS_TOKEN
@@ -206,6 +216,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
 
 ### Обновление задачи (с токеном)
+
 ```http
 PUT /tasks/1
 Authorization: Bearer YOUR_ACCESS_TOKEN
@@ -217,6 +228,7 @@ Content-Type: application/json
 ```
 
 ### Удаление задачи (с токеном)
+
 ```http
 DELETE /tasks/1
 Authorization: Bearer YOUR_ACCESS_TOKEN
@@ -284,21 +296,25 @@ task-manager-fastapi/
 ## Управление миграциями (Alembic)
 
 ### Создание новой миграции
+
 ```bash
 alembic revision --autogenerate -m "Описание изменений"
 ```
 
 ### Применение миграций
+
 ```bash
 alembic upgrade head
 ```
 
 ### Откат миграции
+
 ```bash
 alembic downgrade -1
 ```
 
 ### Просмотр текущего состояния
+
 ```bash
 alembic current
 ```
@@ -319,20 +335,12 @@ alembic current
 - [ ] Фронтенд на React
 - [ ] Деплой на сервер
 
-## Команды для работы с Git
-
-```bash
-git status          # Проверить статус
-git add .           # Добавить все изменения
-git commit -m "..." # Сохранить изменения
-git push            # Отправить на GitHub
-git pull            # Получить обновления
-```
-
 ## Лицензия
+
 MIT
 
 ## Автор
+
 **Andrei Zhiburtovich**
 - GitHub: [@AndreiZhiburtovich](https://github.com/AndreiZhiburtovich)
 
