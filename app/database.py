@@ -3,10 +3,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
 
-# Загружаем переменные окружения
+# Load environment variables
 load_dotenv()
 
-# Читаем DATABASE_URL с проверкой
+# Read DATABASE_URL with validation
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError(
@@ -14,21 +14,23 @@ if not DATABASE_URL:
         "Please create .env file with DATABASE_URL=sqlite:///./task_manager.db"
     )
 
-# Создаём движок базы данных
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}  # Только для SQLite
-)
+# SQLite specific connection arguments
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
 
-# Создаём фабрику сессий
+# Create database engine
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
+
+# Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Базовый класс для моделей
+# Base class for models
 Base = declarative_base()
 
 
 def get_db():
-    """Генератор сессии базы данных для Dependency Injection."""
+    """Database session generator for dependency injection."""
     db = SessionLocal()
     try:
         yield db
