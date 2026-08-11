@@ -2,12 +2,15 @@
 
 ## Описание
 
-REST API с JWT-аутентификацией, изоляцией пользовательских данных и миграциями БД
+**Task Manager API** — полнофункциональный RESTful бэкенд для систем управления задачами, построенный на FastAPI.
+
+Реализована безопасная аутентификация через JWT, изоляция данных между пользователями и гибкая система миграций. Проект готов к развёртыванию: упакован в Docker, использует PostgreSQL и следует современным стандартам бэкенд-разработки.
 
 ## Технологии
+
 - **FastAPI** — современный веб-фреймворк для Python
 - **SQLAlchemy** — ORM для работы с базами данных
-- **SQLite** — легкая база данных (в будущем заменим на PostgreSQL)
+- **PostgreSQL** / **SQLite** — реляционные базы данных
 - **JWT** — аутентификация через JSON Web Tokens
 - **bcrypt** — хеширование паролей
 - **Pydantic** — валидация данных
@@ -15,6 +18,7 @@ REST API с JWT-аутентификацией, изоляцией пользо�
 - **Alembic** — миграции базы данных
 - **python-dotenv** — управление переменными окружения
 - **pytest** — тестирование API эндпоинтов
+- **Docker** — контейнеризация приложения
 
 ## Установка и запуск
 
@@ -71,6 +75,59 @@ python run.py
 ```
 
 После запуска сервер будет доступен по адресу: http://localhost:8000
+
+## Запуск с Docker (рекомендуемый способ)
+
+### 1. Убедитесь, что Docker и Docker Compose установлены
+
+```bash
+docker --version
+docker-compose --version
+```
+
+### 2. Клонирование репозитория
+
+git clone https://github.com/AndreiZhiburtovich/task-manager-fastapi.git
+cd task-manager-fastapi
+
+### 3. Настройка переменных окружения
+
+Создайте файл .env на основе .env.example и укажите PostgreSQL:
+
+```bash
+cp .env.example .env
+```
+
+Отредактируйте .env:
+
+```bash
+SECRET_KEY=your-super-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+DATABASE_URL=postgresql://postgres:postgres@db:5432/taskmanager
+```
+
+### 4. Сборка и запуск контейнеров
+
+```bash
+docker-compose up -d --build
+```
+
+### 5. Применение миграций
+
+```bash
+docker-compose exec app alembic upgrade head
+```
+
+### 6. Проверка работы
+
+Откройте в браузере: http://localhost:8000/docs
+
+Остановка контейнеров
+
+```bash
+docker-compose down
+```
 
 ## Тестирование
 
@@ -253,7 +310,7 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 | `SECRET_KEY` | Секретный ключ для JWT (сгенерируйте свой) | `your-super-secret-key` |
 | `ALGORITHM` | Алгоритм шифрования JWT | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Время жизни токена в минутах | `30` |
-| `DATABASE_URL` | URL для подключения к БД | `sqlite:///./task_manager.db` |
+| `DATABASE_URL` | URL для подключения к БД | sqlite:///./task_manager.db или postgresql://postgres:postgres@db:5432/taskmanager |
 
 ### Генерация SECRET_KEY
 
@@ -285,11 +342,14 @@ task-manager-fastapi/
 │   └── test_tasks.py        # Тесты CRUD задач
 ├── .env                     # Переменные окружения (НЕ В GIT!)
 ├── .env.example             # Пример переменных окружения
-├── venv/                    # Виртуальное окружение
+├── venv/                    # Виртуальное окружение (НЕ В GIT!)
 ├── requirements.txt         # Зависимости проекта
 ├── alembic.ini              # Конфигурация Alembic
 ├── run.py                   # Файл для запуска приложения
 ├── .gitignore               # Игнорируемые файлы
+├── Dockerfile               # Docker конфигурация
+├── docker-compose.yml       # Docker Compose конфигурация
+├── .dockerignore            # Игнорируемые файлы для Docker
 └── README.md                # Описание проекта
 ```
 
@@ -330,8 +390,8 @@ alembic current
 - [x] Alembic миграции
 - [x] Переменные окружения (.env)
 - [x] Тесты (pytest)
-- [ ] Переход на PostgreSQL
-- [ ] Docker контейнеризация
+- [x] Переход на PostgreSQL
+- [x] Docker контейнеризация
 - [ ] Фронтенд на React
 - [ ] Деплой на сервер
 
